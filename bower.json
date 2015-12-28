@@ -1,0 +1,21 @@
+{
+  "name": "miniFace",
+  "version": "0.0.0",
+  "authors": [
+    "Grant Tepper <grant.tepper@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angularjs": "~1.4.7",
+    "bootstrap": "~3.3.5",
+    "fontawesome": "~4.4.0",
+    "lodash": "~3.10.1"
+  }
+}
