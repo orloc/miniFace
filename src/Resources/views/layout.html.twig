@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>MiniFace</title>
+    <link href='https://fonts.googleapis.com/css?family=Roboto:500' rel='stylesheet' type='text/css'>
+    <link href="/bower/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/bower/fontawesome/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="bower/ladda/dist/ladda-themeless.min.css">
+    <link href="/css/main.css" rel="stylesheet">
+
+
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+<body>
+    {% include 'nav.html.twig' %}
+    <!-- Page Content -->
+    <div class="container" ng-app="webview">
+        <div class="row">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </div>
+
+    <script src="/bower/jquery/dist/jquery.min.js"></script>
+    <script src="/bower/lodash/lodash.min.js"></script>
+    <script src="bower/ladda/dist/spin.min.js"></script>
+    <script src="bower/ladda/dist/ladda.min.js"></script>
+    <script src="/bower/angularjs/angular.min.js"></script>
+    <script src="bower/angular-ladda/dist/angular-ladda.min.js"></script>
+    <script src="/bower/bootstrap/dist/js/bootstrap.min.js"></script>
+
+    {% block javascripts %}
+    {% endblock %}
+</body>
+</html>
