@@ -1,0 +1,10 @@
+app/log
+vendor/
+*.swp
+*.swo
+*~
+.idea/
+web/bower
+.sass-cache/
+*.css
+
