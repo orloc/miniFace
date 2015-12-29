@@ -42,7 +42,7 @@ function getUpdateFriendsQuery(array $users){
             if ($u['id'] === $fId){ // skip myself
                 continue;
             } else {
-                $valStr[] = "({$u['id']}, $fId)";
+                $valStr[] = "({$u['id']}, {$users[$fId]['id']})";
             }
         }
     }

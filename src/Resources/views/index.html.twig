@@ -4,9 +4,19 @@
     <div class="col-xs-12 page-container" ng-cloak>
         <div class="row">
             <div class="col-xs-4">
-                <div ng-controller="friendController">
+                <div class="row" ng-controller="friendController">
                     <ul class="list-group">
                     </ul>
+                    <form class="col-xs-9">
+                        <input class="form-control"
+                               type="text"
+                               placeholder="Add a friends name"
+                               ng-model="newFriend.name"/>
+                    </form>
+                    <button class="btn btn-sm btn-primary pull-right"
+                            ng-click="addFriend()">
+                        Add
+                    </button>
                 </div>
             </div>
             <div class="col-xs-8">

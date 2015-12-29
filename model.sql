@@ -30,7 +30,7 @@ CREATE TABLE `posts` (
   PRIMARY KEY (`id`),
   KEY `fk_posts_1_idx` (`user_id`),
   CONSTRAINT `fk_posts_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=405 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -53,12 +53,8 @@ CREATE TABLE `user_friends` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `friending_user_id` int(11) NOT NULL,
   `friended_user_id` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_user_friends_1_idx` (`friending_user_id`),
-  KEY `fk_user_friended_1_idx` (`friended_user_id`),
-  CONSTRAINT `fk_user_friended_1` FOREIGN KEY (`friended_user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_user_friending_1` FOREIGN KEY (`friending_user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=927 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -82,7 +78,7 @@ CREATE TABLE `users` (
   `name` varchar(45) NOT NULL,
   `created_at` datetime NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=102 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -103,4 +99,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-12-28 14:02:27
+-- Dump completed on 2015-12-28 20:56:15

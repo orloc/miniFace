@@ -69,13 +69,22 @@ class MainController implements ControllerProviderInterface {
 
     public function getPostsAction(){
         $db = $this->app['db'];
+        $myUser = $this->getMyUser();
 
-        $stmt = $db->query("
+        $friends = $db->query("
           select friended_user_id as friend_id
           from user_friends
-          where friending_user_id = 1");
+          where friending_user_id = {$myUser['id']}")->fetchAll();
 
-        $userIds = array_merge($stmt->fetchAll(), [1]);
+        if (!empty($friends)){
+            $tmp = array_map(function($f){
+                return $f['friend_id'];
+            }, $friends);
+
+            $friends = $tmp;
+        }
+
+        $userIds = array_merge($friends, [$myUser['id']]);
 
         $q = "select * from posts where user_id IN";
         $ids = implode(",", $userIds);
@@ -97,6 +106,7 @@ class MainController implements ControllerProviderInterface {
 
     public function addFriendAction(Request $request){
 
+
     }
 
     public function getFriendsAction(){
@@ -106,5 +116,11 @@ class MainController implements ControllerProviderInterface {
           SELECT friend
         )';
 
+    }
+
+    protected function getMyUser(){
+        $q = 'select * from users order by created_at DESC limit 1';
+
+        return $this->app['db']->query($q)->fetch();
     }
 }
