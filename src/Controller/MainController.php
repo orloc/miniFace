@@ -71,10 +71,13 @@ class MainController implements ControllerProviderInterface {
         $db = $this->app['db'];
         $myUser = $this->getMyUser();
 
-        $friends = $db->query("
+        $stmt = $db->prepare("
           select friended_user_id as friend_id
           from user_friends
-          where friending_user_id = {$myUser['id']}")->fetchAll();
+          where friending_user_id = :userId");
+        $stmt->bindValue("userId", $myUser['id']);
+
+        $friends = $stmt->execute()->fetchAll();
 
         if (!empty($friends)){
             $tmp = array_map(function($f){
@@ -97,7 +100,13 @@ class MainController implements ControllerProviderInterface {
     }
 
     public function countFriendsAction(){
+        $stmt = $this->app['db']->prepare("SELECT count(*) as friend_count from user_friends where friending_user_id = :userId");
+        $stmt->bindValue("userId", $this->getMyUser()['id']);
+        $stmt->execute();
 
+        $count = $stmt->fetch();
+
+        return new JsonResponse(['friend_count' => $count['friend_count']]);
     }
 
     public function getConnectionDegreesAction(){
@@ -110,17 +119,13 @@ class MainController implements ControllerProviderInterface {
     }
 
     public function getFriendsAction(){
-        // i am user 1
-        $db = $this->app['db'];
-        $sql = 'SELECT * from (
-          SELECT friend
-        )';
 
     }
 
     protected function getMyUser(){
-        $q = 'select * from users order by created_at DESC limit 1';
+        $stmt = $this->app['db']->prepare('select * from users order by created_at DESC limit 1');
+        $stmt->execute();
 
-        return $this->app['db']->query($q)->fetch();
+        return $stmt->fetch();
     }
 }
