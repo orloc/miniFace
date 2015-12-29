@@ -1,0 +1,27 @@
+$selected: desaturate(lighten(#002a80, 20), 50);
+
+body {
+  padding-top: 70px;
+  font-family: 'Roboto', sans-serif;
+  background-color: lighten(black, 80);
+}
+
+form {
+  padding: 0px;
+  margin-bottom: 20px;
+}
+
+.post {
+  border-bottom: 1px solid $selected;
+  text-align: center;
+  height: 40px;
+}
+
+/*
+  Allow angular.js to be loaded in body, hiding cloaked elements until
+  templates compile.  The !important is important given that there may be
+  other selectors that are more specific or come later and might alter display.
+ */
+[ng\:cloak], [ng-cloak], .ng-cloak {
+  display: none !important;
+}

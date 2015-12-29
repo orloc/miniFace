@@ -27,6 +27,15 @@ class MainController implements ControllerProviderInterface {
         $controllers = $app['controllers_factory'];
 
         $controllers->get('/', [$this, 'defaultAction']);
+        $controllers->get('/api/posts', [$this, 'getPostsAction']);
+        $controllers->post('/api/status', [$this, 'postStatusAction']);
+
+        $controllers->post('/api/friends', [$this, 'addFriendAction']);
+        $controllers->get('/api/friends', [$this, 'getFriendsAction']);
+
+        $controllers->get('/api/countFriends', [$this, 'countFriendsAction']);
+        $controllers->get('/api/degrees', [$this, 'getConnectionDegreesAction']);
+
 
         return $controllers;
     }
@@ -37,5 +46,65 @@ class MainController implements ControllerProviderInterface {
      */
     public function defaultAction(){
         return $this->app['twig']->render('index.html.twig');
+    }
+
+    public function postStatusAction(Request $request){
+        // I AM USER 1
+        $content = $request->request->get('status', false);
+        $db = $this->app['db'];
+
+        if ($content === false){
+            // err
+        } else {
+            $content = $db->quote($content);
+        }
+
+        $now = $db->quote(Date('Y-m-d H:i:s'));
+
+        $sql = "INSERT INTO posts (status, user_id, created_at) VALUES ($content, 1, $now)";
+        $db->query($sql);
+
+        return new JsonResponse(['id' => $db->lastInsertId(), 'status' => $content, 'created_at' => $now], 200);
+    }
+
+    public function getPostsAction(){
+        $db = $this->app['db'];
+
+        $stmt = $db->query("
+          select friended_user_id as friend_id
+          from user_friends
+          where friending_user_id = 1");
+
+        $userIds = array_merge($stmt->fetchAll(), [1]);
+
+        $q = "select * from posts where user_id IN";
+        $ids = implode(",", $userIds);
+        $q .= "($ids)";
+
+        $posts = $db->query($q)->fetchAll();
+
+        return new JsonResponse($posts);
+
+    }
+
+    public function countFriendsAction(){
+
+    }
+
+    public function getConnectionDegreesAction(){
+
+    }
+
+    public function addFriendAction(Request $request){
+
+    }
+
+    public function getFriendsAction(){
+        // i am user 1
+        $db = $this->app['db'];
+        $sql = 'SELECT * from (
+          SELECT friend
+        )';
+
     }
 }
