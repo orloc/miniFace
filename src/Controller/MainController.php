@@ -153,26 +153,46 @@ class MainController implements ControllerProviderInterface {
         $db = $this->app['db'];
 
         $myUser = $this->getMyUser();
-
-        $connected = false;
         $search_try = 1;
-        while(!$connected || $search_try <= 6){
+        while($search_try <= 6){
             $q = "
-                select count(*)
-                from user_friends as f
+                select count(*) as c
+                from (select uf.friended_user_id
+                  from user_friends as uf
+                  where uf.friending_user_id=:userId) as f0
             ";
 
             if ($search_try === 1){
-                $q .= "where f.friended_user_id = :friendId
-                and f.friending_user_id = :userId";
+                $q .= " where f0.friended_user_id = :friendId";
             } else {
+                $qDepth = 1;
+                $lastDepth = $qDepth - 1;
+                while ($qDepth <= $search_try - 1){
+                    $q .= " join user_friends as f$qDepth on f$lastDepth.friended_user_id = f$qDepth.friending_user_id";
+                    $qDepth++;
+                }
 
+                $d = $qDepth - 1;
+                $q .= " where f$d.friended_user_id = :friendId";
             }
 
-            $stmt = $db->prepare();
-
+            $stmt = $db->prepare($q);
             $stmt->execute(["userId" => $myUser['id'], 'friendId' => $friend_id]);
+
+            $result = $stmt->fetch();
+
+            if (intval($result['c']) !== 0){
+                break;
+            } else {
+                $search_try++;
+            }
         }
+
+        $hasConnection = boolval($result['c']);
+
+        return new JsonResponse([ 'degrees' => $hasConnection === true
+            ? $search_try : 0
+        ], 200);
     }
 
     public function addFriendAction(Request $request){
