@@ -3,10 +3,15 @@
 angular.module('miniFace')
 .controller('statusController', [ '$scope', '$http', function($scope, $http){
     $scope.status = {};
+    $scope.myUser = {};
     $scope.posts = [];
 
     $http.get('/api/posts').then(function(d){
         $scope.posts = d.data;
+    });
+
+    $http.get('/api/myUser').then(function(d){
+        $scope.myUser = d.data;
     });
 
     $scope.postStatus = function(){

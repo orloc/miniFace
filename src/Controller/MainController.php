@@ -28,6 +28,9 @@ class MainController implements ControllerProviderInterface {
         $controllers = $app['controllers_factory'];
 
         $controllers->get('/', [$this, 'defaultAction']);
+
+        $controllers->get('/api/myUser', [$this, 'getMyUserAction']);
+
         $controllers->get('/api/posts', [$this, 'getPostsAction']);
         $controllers->post('/api/status', [$this, 'postStatusAction']);
 
@@ -49,6 +52,12 @@ class MainController implements ControllerProviderInterface {
         return $this->app['twig']->render('index.html.twig');
     }
 
+    public function getMyUserAction(){
+        $myUser = $this->getMyUser();
+
+        return new JsonResponse($myUser, 200);
+    }
+
     public function postStatusAction(Request $request){
         // I AM USER 1
         $content = $request->request->get('status', false);
@@ -66,26 +75,41 @@ class MainController implements ControllerProviderInterface {
         $db = $this->app['db'];
         $myUser = $this->getMyUser();
 
-        $stmt = $db->prepare("select friended_user_id as friend_id from user_friends where friending_user_id = :userId");
+        $stmt = $db->prepare("select * from user_friends where friending_user_id = :userId");
         $stmt->bindValue("userId", $myUser['id']);
         $stmt->execute();
 
         $friends = $stmt->fetchAll();
 
+        $newFriends = [];
         if (!empty($friends)){
             $tmp = array_map(function($f){
-                return $f['friend_id'];
+                return $f['friended_user_id'];
             }, $friends);
 
-            $friends = $tmp;
+            $newFriends = $tmp;
         }
 
         $stmt = $db->executeQuery("select * from posts where user_id IN (?)",
-            [array_merge($friends, [$myUser['id']])],
+            [array_merge($newFriends, [$myUser['id']])],
             [Connection::PARAM_INT_ARRAY]
         );
 
         $posts = $stmt->fetchAll();
+
+
+        $friendReference = $db->executeQuery("select * from users where id IN (?)",
+            [array_merge($newFriends, [$myUser['id']])],
+            [Connection::PARAM_INT_ARRAY]
+        )->fetchAll();
+
+        foreach ($posts as $k => $p){
+            foreach ($friendReference as $f){
+                if ($p['user_id'] === $f['id']){
+                    $posts[$k]['user'] = $f;
+                }
+            }
+        }
 
         return new JsonResponse($posts);
 
