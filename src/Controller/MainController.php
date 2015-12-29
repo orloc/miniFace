@@ -37,7 +37,7 @@ class MainController implements ControllerProviderInterface {
         $controllers->post('/api/friends', [$this, 'addFriendAction']);
         $controllers->get('/api/friends', [$this, 'getFriendsAction']);
 
-        $controllers->get('/api/countFriends', [$this, 'countFriendsAction']);
+        $controllers->get('/api/countFriends', [$this, 'countFriendsOfFriendsAction']);
         $controllers->get('/api/degrees', [$this, 'getConnectionDegreesAction']);
 
 
@@ -115,14 +115,24 @@ class MainController implements ControllerProviderInterface {
 
     }
 
-    public function countFriendsAction(){
-        $stmt = $this->app['db']->prepare("SELECT count(*) as friend_count from user_friends where friending_user_id = :userId");
-        $stmt->bindValue("userId", $this->getMyUser()['id']);
-        $stmt->execute();
+    public function countFriendsOfFriendsAction(){
+        $myUser = $this->getMyUser();
+        $db = $this->app['db'];
+
+        $stmt = $db->prepare("
+            select count(ff.id) as ucount
+            from (select uf.friended_user_id
+                  from user_friends as uf
+                  where uf.friending_user_id=:uid) as uf
+            join users as u on uf.friended_user_id = u.id
+            join user_friends as ff on u.id=ff.friending_user_id
+        ");
+
+        $stmt->execute(["uid" => $myUser['id']]);
 
         $count = $stmt->fetch();
 
-        return new JsonResponse(['friend_count' => $count['friend_count']]);
+        return new JsonResponse($count);
     }
 
     public function getConnectionDegreesAction(){
