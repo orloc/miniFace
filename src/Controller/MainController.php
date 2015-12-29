@@ -37,6 +37,7 @@ class MainController implements ControllerProviderInterface {
         $controllers->post('/api/friends', [$this, 'addFriendAction']);
         $controllers->get('/api/friends', [$this, 'getFriendsAction']);
 
+        $controllers->post('/api/friendsInNetwork', [$this, 'getAvailableFriends']);
         $controllers->get('/api/countFriends', [$this, 'countFriendsOfFriendsAction']);
         $controllers->get('/api/degrees', [$this, 'getConnectionDegreesAction']);
 
@@ -115,12 +116,24 @@ class MainController implements ControllerProviderInterface {
 
     }
 
+    public function getAvailableFriends(Request $request){
+        $ids = $request->request->get('keys', null);
+        $db = $this->app['db'];
+
+        $friends = $db->executeQuery("select * from users where id IN (?)",
+            [$ids],
+            [Connection::PARAM_INT_ARRAY]
+        )->fetchAll();
+
+        return new JsonResponse($friends);
+    }
+
     public function countFriendsOfFriendsAction(){
         $myUser = $this->getMyUser();
         $db = $this->app['db'];
 
         $stmt = $db->prepare("
-            select count(ff.id) as ucount
+            select count(DISTINCT ff.friended_user_id) as ucount, group_concat(DISTINCT ff.friended_user_id) as ids
             from (select uf.friended_user_id
                   from user_friends as uf
                   where uf.friending_user_id=:uid) as uf

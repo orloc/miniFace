@@ -5,29 +5,28 @@
         <div class="row">
             <div class="col-xs-4">
                 <div class="row" ng-controller="friendController">
+                    <p>Current Friends</p>
                     <ul class="list-group">
                         <li class="list-group-item" ng-repeat="f in friends">
                             {{ '{{ f.name }}'}}
                         </li>
                     </ul>
-                    <form class="col-xs-9">
-                        <input class="form-control"
-                               type="text"
-                               placeholder="Add a friends name"
-                               ng-model="newFriend.name"/>
-                    </form>
-                    <button class="btn btn-sm btn-primary pull-right"
-                            ng-click="addFriend()">
-                        Add
-                    </button>
-                </div>
-                <div class="row" ng-controller="allUsersController">
-
+                    <div class="col-xs-12">
+                        <div class="row" ng-controller="allUsersController">
+                            <p>Total UNIQUE Friends of Friends : {{ '{{ friendsOfFriends.ucount }}' }}</p>
+                            <ul class="list-group">
+                                <li class="list-group-item" ng-repeat="f in available_friends" ng-show="isAdded(f) === false">
+                                    {{ '{{ f.name }}'}} <button class="btn btn-sm pull-right" ng-click="addFriend(f)">Add</button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="col-xs-8">
                 <div ng-controller="statusController" class="row">
                     <div class="col-xs-12">
+                        <p>Post your Status</p>
                         <div class="row">
                             <form class="col-xs-9">
                                 <div class="input-group">
@@ -45,6 +44,7 @@
                         </div>
                     </div>
                     <div class="col-xs-12">
+                        <p>Your posts and your friends posts</p>
                         <div ng-repeat="p in posts" class="post">
 
                             {{ '{{ p.status }}' }} <br>
