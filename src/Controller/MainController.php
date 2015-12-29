@@ -148,8 +148,31 @@ class MainController implements ControllerProviderInterface {
         return new JsonResponse($count);
     }
 
-    public function getConnectionDegreesAction(){
+    public function getConnectionDegreesAction(Request $request){
+        $friend_id = $request->query->get('friend_id', false);
+        $db = $this->app['db'];
 
+        $myUser = $this->getMyUser();
+
+        $connected = false;
+        $search_try = 1;
+        while(!$connected || $search_try <= 6){
+            $q = "
+                select count(*)
+                from user_friends as f
+            ";
+
+            if ($search_try === 1){
+                $q .= "where f.friended_user_id = :friendId
+                and f.friending_user_id = :userId";
+            } else {
+
+            }
+
+            $stmt = $db->prepare();
+
+            $stmt->execute(["userId" => $myUser['id'], 'friendId' => $friend_id]);
+        }
     }
 
     public function addFriendAction(Request $request){

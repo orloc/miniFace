@@ -24,6 +24,11 @@ angular.module('miniFace')
     };
 
     $scope.isAdded = function(f){
-        return typeof $scope.addedUsers[f.name] !== 'undefined' && $scope.addedUsers[f.name] === true;
+        var isFriend = _.find($scope.$parent.friends, function(d){
+            return f.name === d.name;
+        });
+
+
+        return (typeof $scope.addedUsers[f.name] !== 'undefined' && $scope.addedUsers[f.name] === true) || typeof isFriend !== 'undefined'
     };
 }]);
