@@ -2,6 +2,7 @@
 
 namespace MiniFace\Controller;
 
+use Doctrine\DBAL\Connection;
 use Silex\Application;
 use Silex\ControllerProviderInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -53,16 +54,10 @@ class MainController implements ControllerProviderInterface {
         $content = $request->request->get('status', false);
         $db = $this->app['db'];
 
-        if ($content === false){
-            // err
-        } else {
-            $content = $db->quote($content);
-        }
+        $now = Date('Y-m-d H:i:s');
 
-        $now = $db->quote(Date('Y-m-d H:i:s'));
-
-        $sql = "INSERT INTO posts (status, user_id, created_at) VALUES ($content, 1, $now)";
-        $db->query($sql);
+        $stmt = $db->prepare("INSERT INTO posts (status, user_id, created_at) VALUES (:content, :user_id, :created_at)");
+        $stmt->execute(['content' => $content, 'user_id' => $this->getMyUser()['id'], 'created_at' => $now]);
 
         return new JsonResponse(['id' => $db->lastInsertId(), 'status' => $content, 'created_at' => $now], 200);
     }
@@ -71,13 +66,11 @@ class MainController implements ControllerProviderInterface {
         $db = $this->app['db'];
         $myUser = $this->getMyUser();
 
-        $stmt = $db->prepare("
-          select friended_user_id as friend_id
-          from user_friends
-          where friending_user_id = :userId");
+        $stmt = $db->prepare("select friended_user_id as friend_id from user_friends where friending_user_id = :userId");
         $stmt->bindValue("userId", $myUser['id']);
+        $stmt->execute();
 
-        $friends = $stmt->execute()->fetchAll();
+        $friends = $stmt->fetchAll();
 
         if (!empty($friends)){
             $tmp = array_map(function($f){
@@ -87,13 +80,12 @@ class MainController implements ControllerProviderInterface {
             $friends = $tmp;
         }
 
-        $userIds = array_merge($friends, [$myUser['id']]);
+        $stmt = $db->executeQuery("select * from posts where user_id IN (?)",
+            [array_merge($friends, [$myUser['id']])],
+            [Connection::PARAM_INT_ARRAY]
+        );
 
-        $q = "select * from posts where user_id IN";
-        $ids = implode(",", $userIds);
-        $q .= "($ids)";
-
-        $posts = $db->query($q)->fetchAll();
+        $posts = $stmt->fetchAll();
 
         return new JsonResponse($posts);
 
@@ -114,16 +106,46 @@ class MainController implements ControllerProviderInterface {
     }
 
     public function addFriendAction(Request $request){
+        $name = $request->request->get('name', false);
 
+        $db = $this->app['db'];
+        $user = $this->getMyUser();
+        $now = Date('Y-m-d H:i:s');
+
+        $stmt = $db->prepare("INSERT INTO users (name, created_at) VALUES(:name, :created_at)");
+        $stmt->execute(['name' => $name, 'created_at' => $now]);
+
+        $uId = $db->lastInsertId();
+
+        $friendStmt = $db->prepare("INSERT INTO user_friends (friending_user_id, friended_user_id) VALUES(:myUser, :friendUser)");
+        $friendStmt->execute(['myUser' => $user['id'], 'friendUser' => $uId]);
+
+        return new JsonResponse(['id' => $uId, 'name' => $name, 'created_at' => $now], 200);
 
     }
 
     public function getFriendsAction(){
+        $user = $this->getMyUser();
 
+        $stmt = $this->app['db']->prepare("
+          SELECT u.*
+          FROM users AS u
+          INNER JOIN user_friends AS uf ON u.id=uf.friended_user_id
+          WHERE uf.friending_user_id = :user_id
+          GROUP BY u.id
+          "
+        );
+
+        $stmt->bindValue("user_id", $user['id']);
+        $stmt->execute();
+
+        $res = $stmt->fetchAll();
+
+        return new JsonResponse($res);
     }
 
     protected function getMyUser(){
-        $stmt = $this->app['db']->prepare('select * from users order by created_at DESC limit 1');
+        $stmt = $this->app['db']->prepare('select * from users order by created_at ASC limit 1');
         $stmt->execute();
 
         return $stmt->fetch();
